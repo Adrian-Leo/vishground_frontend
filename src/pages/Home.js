@@ -14,6 +14,8 @@ import Cube from "./components/Cube";
 import CustomButton from "./components/CustomButton";
 import GoogleMaps from "./utility/GoogleMaps";
 import options from "./utility/OptionsMQTT";
+import LocationPin from "./components/LocationPin";
+import LocationDrone from "./components/LocationDrone";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
@@ -44,10 +46,11 @@ const Home = () => {
   let arrCoor = [...mapsFlight];
 
   const [titik, setTitik] = useState(0);
-
+  const serverHeroku = "https://vishback-821ca4854d9a.herokuapp.com/"
   useEffect(() => {
+   
     async function fetchData() {
-      const response = await axios.get("https://vtol-cigritous-backend.herokuapp.com/updatesumnode");
+      const response = await axios.get(`${serverHeroku}/updatesumnode`);
       const dataTitik = response.data;
       if (dataTitik.length > 0 && dataTitik[0].angka > 0) {
         setTitik(dataTitik[0].angka);
@@ -58,7 +61,7 @@ const Home = () => {
         };
         try {
           console.log("Data SUM: ", dataSum);
-          await axios.post("https://vtol-cigritous-backend.herokuapp.com/insertsumnode", dataSum);
+          await axios.post(`${serverHeroku}/insertsumnode`, dataSum);
           console.log("Data Central sent to the backend");
         } catch (error) {
           console.error("Error sending data to the backend: ", error);
@@ -67,6 +70,7 @@ const Home = () => {
     }
     fetchData();
   }, [titik]);
+
 
   let totalNode = 20;
 
@@ -87,7 +91,7 @@ const Home = () => {
     const fetchData = async (a) => {
       try {
         console.log("masuk fetch");
-        const response = await axios.get(`https://vtol-cigritous-backend.herokuapp.com/updatecoordinate/${a}`);
+        const response = await axios.get(`${serverHeroku}/updatecoordinate/${a}`);
         const data = response.data;
 
         if (data.length !== 0) {
@@ -176,8 +180,9 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    const port = 1884;
-    const client = mqtt.connect(`wss://driver.cloudmqtt.com:${port}`, options);
+    const port = 	37900;
+    const server = "wss://hairdresser.cloudmqtt.com"
+    const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       console.log("MQTT client connected to the server.");
       client.subscribe("/drone/status");
@@ -295,8 +300,7 @@ const Home = () => {
           </button>
         </Stack>
         <Stack direction={"column"} padding="20px" gap="20px">
-          
-
+        
           <GoogleMaps />
 
           <div style={{ display: "flex", justifyContent: "space-between" }}>

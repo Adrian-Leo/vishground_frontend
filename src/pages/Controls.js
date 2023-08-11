@@ -45,11 +45,24 @@ const Controls = () => {
 
   let arrCoor = [...mapsFlight];
 
+  const [attitude, setAttitude] = useState({
+    yaw: 0.0,
+    pitch: 0.0,
+    roll: 0.0,
+    att: 0.0,
+    lat: -6.365232,
+    lng: 106.824506,
+  });
+  
+
   const [titik, setTitik] = useState(0);
 
+  const serverHeroku = "https://vishback-821ca4854d9a.herokuapp.com/"
+ 
   useEffect(() => {
+    
     async function fetchData() {
-      const response = await axios.get("https://vtol-cigritous-backend.herokuapp.com/updatesumnode");
+      const response = await axios.get(`${serverHeroku}/updatesumnode`);
       const dataTitik = response.data;
       if (dataTitik.length > 0 && dataTitik[0].angka > 0) {
         setTitik(dataTitik[0].angka);
@@ -60,7 +73,7 @@ const Controls = () => {
         };
         try {
           console.log("Data SUM: ", dataSum);
-          await axios.post("https://vtol-cigritous-backend.herokuapp.com/insertsumnode", dataSum);
+          await axios.post(`${serverHeroku}/insertsumnode`, dataSum);
           console.log("Data Central sent to the backend");
         } catch (error) {
           console.error("Error sending data to the backend: ", error);
@@ -78,6 +91,15 @@ const Controls = () => {
     nodes.push(index);
   }
 
+  const [hoverCard, setHoverCard] = useState(Array(nodes.length).fill(false));
+  const [hoverDashboard, setHoverDashboard] = useState(false);
+  const [hoverAbout, setHoverAbout] = useState(false);
+  const [hoverControls, setHoverControls] = useState(false);
+
+  const handleDashboardHover = () => setHoverDashboard(!hoverDashboard);
+  const handleAboutHover = () => setHoverAbout(!hoverAbout);
+  const handleControlsHover = () => setHoverControls(!hoverControls);
+
   const [dataCor, setDataCor] = useState({
     node: [],
     latitude: [],
@@ -89,7 +111,7 @@ const Controls = () => {
     const fetchData = async (a) => {
       try {
         console.log("masuk fetch");
-        const response = await axios.get(`https://vtol-cigritous-backend.herokuapp.com/updatecoordinate/${a}`);
+        const response = await axios.get(`${serverHeroku}/updatecoordinate/${a}`);
         const data = response.data;
 
         if (data.length !== 0) {
@@ -118,14 +140,11 @@ const Controls = () => {
     }
   }, [titik]);
 
-  const [hoverCard, setHoverCard] = useState(Array(nodes.length).fill(false));
-  const [hoverDashboard, setHoverDashboard] = useState(false);
-  const [hoverAbout, setHoverAbout] = useState(false);
-  const [hoverControls, setHoverControls] = useState(false);
-
-  const handleDashboardHover = () => setHoverDashboard(!hoverDashboard);
-  const handleAboutHover = () => setHoverAbout(!hoverAbout);
-  const handleControlsHover = () => setHoverControls(!hoverControls);
+  useEffect(() => {
+    console.log("Data Cor : ", mapsFlight[0]);
+    console.log("Data Cor : ", mapsFlight[1]);
+    console.log("Data Cor : ", mapsFlight[2]);
+  }, [dataCor, mapsFlight]);
 
   const [mapType, setMapType] = useState("roadmap");
 
@@ -139,14 +158,7 @@ const Controls = () => {
     setHoverCard(newHoverCard);
   };
 
-  const [attitude, setAttitude] = useState({
-    yaw: 0.0,
-    pitch: 0.0,
-    roll: 0.0,
-    att: 0.0,
-    lat: -6.365232,
-    lng: 106.824506,
-  });
+
 
   const defaultProps = {
     center: {
@@ -168,6 +180,34 @@ const Controls = () => {
     },
   };
 
+  
+  const handleResetLocation = () => {
+    setMapsFlight([]);
+    setMapsFlightLtd([]);
+    setMapsFlightLng([]);
+    setTitik(0);
+
+  
+
+    axios
+      .post(`${serverHeroku}/resetsum`)
+      .then((response) => {
+        console.log(response.data); // log the response from the server
+      })
+      .catch((error) => {
+        console.log(error); // log any errors that occurred during the request
+      });
+
+    axios
+      .post(`${serverHeroku}/resetcor`)
+      .then((response) => {
+        console.log(response.data); // log the response from the server
+      })
+      .catch((error) => {
+        console.log(error); // log any errors that occurred during the request
+      });
+  };
+
   useEffect(() => {
     const interval = setInterval(() => {
       setHoursTime(moment().format("H:mm:ss"));
@@ -178,8 +218,9 @@ const Controls = () => {
   }, []);
 
   useEffect(() => {
-    const port = 1884;
-    const client = mqtt.connect(`wss://driver.cloudmqtt.com:${port}`, options);
+    const port = 	37900;
+    const server = "wss://hairdresser.cloudmqtt.com"
+    const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       console.log("MQTT client connected to the server.");
       client.subscribe("/drone/status");
@@ -188,9 +229,30 @@ const Controls = () => {
       client.subscribe("/drone/lng");
       client.subscribe("/drone/alt");
       client.subscribe("/drone/time");
-      for (let i = 1; i <= 20; i++) {
-        client.subscribe("/" + i + "/coordinate");
+      for (let i = 1; i <= mapsFlight.length; i++) {
+        client.publish("/" + i + "/coordinate", JSON.stringify(mapsFlight[i - 1]), { qos: 0 });
+        client.publish(
+          "/" + i + "/latitude",
+          parseFloat(mapsFlightLtd[i - 1])
+            .toFixed(6)
+            .toString(),
+          { qos: 0 }
+        );
+        client.publish(
+          "/" + i + "/longitude",
+          parseFloat(mapsFlightLng[i - 1])
+            .toFixed(6)
+            .toString(),
+          { qos: 0 }
+        );
       }
+
+      for (let i = 1; i <= 20; i++) {
+      
+        client.subscribe("/" + i + "/latitude");
+        client.subscribe("/" + i + "/longitude");
+      }
+
     });
 
     console.log("masuk config");
@@ -226,6 +288,37 @@ const Controls = () => {
       client.end();
     };
   }, [mapsFlight, droneFlightLng, droneFlightLtd]);
+
+  const [shouldSkip, setShouldSkip] = useState(true);
+
+
+
+  useEffect(() => {
+    const sendData = async () => {
+     
+      for (let i = 1; i <= titik; i++) {
+        const dataCoordinate = {
+          node: i,
+          latitude: mapsFlightLtd[i - 1],
+          longitude: mapsFlightLng[i - 1],
+          coordinate: mapsFlight[i - 1],
+        };
+    
+        try {
+          if (!shouldSkip) {
+            axios.post(`${serverHeroku}/insertcoordinate`, dataCoordinate);
+            console.log("Data Node sent to the backend");
+            console.log(mapsFlight[i - 1]);
+          }
+        } catch (error) {
+          console.error("Error sending data to the backend: ", error);
+        }
+      }
+      setShouldSkip(true);
+    };
+    sendData();
+  }, [ mapsFlight, mapsFlightLng, mapsFlightLtd]);
+
 
   return (
     <Stack direction={"row"} gap={"30px"}>
@@ -272,6 +365,14 @@ const Controls = () => {
           >
             Switch to {mapType === "roadmap" ? "Satellite" : "Roadmap"} view
           </button>
+          <button
+              onMouseEnter={() => handleCardHover(1)}
+              onMouseLeave={() => handleCardHover(1)}
+              style={{ backgroundColor: "#3D3356", color: "white", padding: "10px 30px", border: "none", boxShadow: hoverCard[1] ? "0px 0px 20px 0px #000000" : "none" }}
+              onClick={handleResetLocation}
+            >
+              Reset Location
+            </button>
         </Stack>
           <Stack direction={"column"} padding="20px" gap="20px">
             
@@ -310,7 +411,8 @@ const Controls = () => {
           </Stack>
         
         <Stack direction={"column"} padding="10px" gap="5px" height="50vh">
-          <Card>
+        <h3>Live Streaming</h3>
+          <Card> 
           <video
             autoPlay
             loop

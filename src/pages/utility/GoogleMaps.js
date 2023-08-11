@@ -10,6 +10,8 @@ export default function GoogleMaps() {
       allowFullScreen={true}
       loading="lazy"
     ></iframe>
+
+    
   </div>
   )
 }
