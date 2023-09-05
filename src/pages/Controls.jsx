@@ -1,31 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { Stack, Typography, Grid, IconButton, Box, Input,Card } from "@mui/material";
+import { Stack, Typography, Grid, Card, Box } from "@mui/material";
+import CardCover from "@mui/joy/CardCover";
+import CardContent from "@mui/joy/CardContent";
 import logo from "../public/logo_1.png";
 import moment from "moment/moment";
-import { Canvas} from "react-three-fiber";
-import { Physics} from "@react-three/cannon";
 import axios from "axios";
+import { Canvas } from "react-three-fiber";
+import { Physics } from "@react-three/cannon";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from "chart.js";
+import CustomButton from "./components/CustomButton";
 import "bootstrap/dist/css/bootstrap.min.css";
 import mqtt from "mqtt/dist/mqtt";
 import CorCard from "./components/CoordinateCard";
-import SensorCard from "./components/SensorCard";
 import Cube from "./components/Cube";
-import CustomButton from "./components/CustomButton";
+import LocationPin from "./components/LocationPin";
+import SensorCard from "./components/SensorCard";
+import LocationDrone from "./components/LocationDrone";
 import GoogleMaps from "./utility/GoogleMaps";
 import options from "./utility/OptionsMQTT";
-import LocationPin from "./components/LocationPin";
-import LocationDrone from "./components/LocationDrone";
-
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-
-
+import { handleTakeOff, handleLanding } from "./utility/FlightHandling";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-const Home = () => {
+const Controls = () => {
   moment.locale("id");
-  
+
   const [hoursTime, setHoursTime] = useState("");
   const [daysTime, setDaysTime] = useState("");
   const [mapsFlight, setMapsFlight] = useState([]);
@@ -33,22 +32,26 @@ const Home = () => {
   const [droneFlightLng, setDroneFlightLng] = useState([]);
   const [mapsFlightLtd, setMapsFlightLtd] = useState([]);
   const [mapsFlightLng, setMapsFlightLng] = useState([]);
-  const [droneStatus, setDroneStatus] = useState([]);
-  const [droneBattery, setDroneBattery] = useState([]);
-  const [droneAltitude, setDroneAltitude] = useState([]);
-  const [droneSpeedX, setDroneSpeedX] = useState([]);
-  const [droneSpeedY, setDroneSpeedY] = useState([]);
-  const [droneSpeedZ, setDroneSpeedZ] = useState([]);
   const [droneProgress, setDroneProgress] = useState([]);
-  const [droneHeading, setDroneHeading] = useState([]);
-  const [droneTimestamp, setDroneTimeStamp] = useState([]);
+  const [droneStatus, setDroneStatus] = useState([]);
+  const [droneAltitude, setDroneAltitude] = useState([]);
 
   let arrCoor = [...mapsFlight];
 
+  const [attitude, setAttitude] = useState({
+    yaw: 0.0,
+    pitch: 0.0,
+    roll: 0.0,
+    att: 0.0,
+    lat: -6.365232,
+    lng: 106.824506,
+  });
+
   const [titik, setTitik] = useState(0);
-  const serverHeroku = "https://vishback-821ca4854d9a.herokuapp.com/"
+
+  const serverHeroku = "https://vishback-821ca4854d9a.herokuapp.com/";
+
   useEffect(() => {
-   
     async function fetchData() {
       const response = await axios.get(`${serverHeroku}/updatesumnode`);
       const dataTitik = response.data;
@@ -71,7 +74,6 @@ const Home = () => {
     fetchData();
   }, [titik]);
 
-
   let totalNode = 20;
 
   const nodes = [];
@@ -79,6 +81,15 @@ const Home = () => {
   for (let index = 1; index <= totalNode; index++) {
     nodes.push(index);
   }
+
+  const [hoverCard, setHoverCard] = useState(Array(nodes.length).fill(false));
+  const [hoverDashboard, setHoverDashboard] = useState(false);
+  const [hoverAbout, setHoverAbout] = useState(false);
+  const [hoverControls, setHoverControls] = useState(false);
+
+  const handleDashboardHover = () => setHoverDashboard(!hoverDashboard);
+  const handleAboutHover = () => setHoverAbout(!hoverAbout);
+  const handleControlsHover = () => setHoverControls(!hoverControls);
 
   const [dataCor, setDataCor] = useState({
     node: [],
@@ -120,14 +131,11 @@ const Home = () => {
     }
   }, [titik]);
 
-  const [hoverCard, setHoverCard] = useState(Array(nodes.length).fill(false));
-  const [hoverDashboard, setHoverDashboard] = useState(false);
-  const [hoverAbout, setHoverAbout] = useState(false);
-  const [hoverControls, setHoverControls] = useState(false);
-
-  const handleDashboardHover = () => setHoverDashboard(!hoverDashboard);
-  const handleAboutHover = () => setHoverAbout(!hoverAbout);
-  const handleControlsHover = () => setHoverControls(!hoverControls);
+  useEffect(() => {
+    console.log("Data Cor : ", mapsFlight[0]);
+    console.log("Data Cor : ", mapsFlight[1]);
+    console.log("Data Cor : ", mapsFlight[2]);
+  }, [dataCor, mapsFlight]);
 
   const [mapType, setMapType] = useState("roadmap");
 
@@ -140,15 +148,6 @@ const Home = () => {
     newHoverCard[index] = !newHoverCard[index];
     setHoverCard(newHoverCard);
   };
-
-  const [attitude, setAttitude] = useState({
-    yaw: 0.0,
-    pitch: 0.0,
-    roll: 0.0,
-    att: 0.0,
-    lat: -6.365232,
-    lng: 106.824506,
-  });
 
   const defaultProps = {
     center: {
@@ -170,6 +169,31 @@ const Home = () => {
     },
   };
 
+  const handleResetLocation = () => {
+    setMapsFlight([]);
+    setMapsFlightLtd([]);
+    setMapsFlightLng([]);
+    setTitik(0);
+
+    axios
+      .post(`${serverHeroku}/resetsum`)
+      .then((response) => {
+        console.log(response.data); // log the response from the server
+      })
+      .catch((error) => {
+        console.log(error); // log any errors that occurred during the request
+      });
+
+    axios
+      .post(`${serverHeroku}/resetcor`)
+      .then((response) => {
+        console.log(response.data); // log the response from the server
+      })
+      .catch((error) => {
+        console.log(error); // log any errors that occurred during the request
+      });
+  };
+
   useEffect(() => {
     const interval = setInterval(() => {
       setHoursTime(moment().format("H:mm:ss"));
@@ -180,24 +204,38 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    const port = 	37900;
-    const server = "wss://hairdresser.cloudmqtt.com"
+    const port = 37900;
+    const server = "wss://hairdresser.cloudmqtt.com";
     const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       console.log("MQTT client connected to the server.");
       client.subscribe("/drone/status");
-      client.subscribe("/drone/battery");
       client.subscribe("/drone/progress");
       client.subscribe("/drone/lat");
       client.subscribe("/drone/lng");
       client.subscribe("/drone/alt");
-      client.subscribe("/drone/vx");
-      client.subscribe("/drone/vy");
-      client.subscribe("/drone/vz");
-      client.subscribe("/drone/yaw_curr");
       client.subscribe("/drone/time");
+      for (let i = 1; i <= mapsFlight.length; i++) {
+        client.publish("/" + i + "/coordinate", JSON.stringify(mapsFlight[i - 1]), { qos: 0 });
+        client.publish(
+          "/" + i + "/latitude",
+          parseFloat(mapsFlightLtd[i - 1])
+            .toFixed(6)
+            .toString(),
+          { qos: 0 }
+        );
+        client.publish(
+          "/" + i + "/longitude",
+          parseFloat(mapsFlightLng[i - 1])
+            .toFixed(6)
+            .toString(),
+          { qos: 0 }
+        );
+      }
+
       for (let i = 1; i <= 20; i++) {
-        client.subscribe("/" + i + "/coordinate");
+        client.subscribe("/" + i + "/latitude");
+        client.subscribe("/" + i + "/longitude");
       }
     });
 
@@ -211,9 +249,6 @@ const Home = () => {
           setDroneStatus("Armed");
         }
       }
-      if (topic === "/drone/battery") {
-        setDroneBattery(message.toString());
-      }
       if (topic === "/drone/progress") {
         setDroneProgress(message.toString());
       }
@@ -225,21 +260,6 @@ const Home = () => {
       }
       if (topic === "/drone/alt") {
         setDroneAltitude(message.toString());
-      }
-      if (topic === "/drone/vx") {
-        setDroneSpeedX(message.toString());
-      }
-      if (topic === "/drone/vy") {
-        setDroneSpeedY(message.toString());
-      }
-      if (topic === "/drone/vz") {
-        setDroneSpeedZ(message.toString());
-      }
-      if (topic === "/drone/yaw_curr") {
-        setDroneHeading(message.toString());
-      }
-      if (topic === "/drone/time") {
-        setDroneTimeStamp(message.toString());
       }
       for (let i = 1; i <= 20; i++) {
         if (topic === "/" + i + "/coordinate") {
@@ -253,6 +273,33 @@ const Home = () => {
     };
   }, [mapsFlight, droneFlightLng, droneFlightLtd]);
 
+  const [shouldSkip, setShouldSkip] = useState(true);
+
+  useEffect(() => {
+    const sendData = async () => {
+      for (let i = 1; i <= titik; i++) {
+        const dataCoordinate = {
+          node: i,
+          latitude: mapsFlightLtd[i - 1],
+          longitude: mapsFlightLng[i - 1],
+          coordinate: mapsFlight[i - 1],
+        };
+
+        try {
+          if (!shouldSkip) {
+            axios.post(`${serverHeroku}/insertcoordinate`, dataCoordinate);
+            console.log("Data Node sent to the backend");
+            console.log(mapsFlight[i - 1]);
+          }
+        } catch (error) {
+          console.error("Error sending data to the backend: ", error);
+        }
+      }
+      setShouldSkip(true);
+    };
+    sendData();
+  }, [mapsFlight, mapsFlightLng, mapsFlightLtd]);
+
   return (
     <Stack direction={"row"} gap={"30px"}>
       <Stack flexBasis={"25%"} width={"80%"} maxWidth={"25%"} alignItems="center" gap="10px" sx={{ background: "#000000", height: "100vh", padding: "30px" }}>
@@ -262,7 +309,7 @@ const Home = () => {
         <Typography>{daysTime}</Typography>
         <Stack direction={"column"} padding="20px" gap="20px"></Stack>
         <Stack direction="column" spacing={1}>
-          <CustomButton href="/" label="Dashboard" hover={hoverDashboard} handleHover={handleDashboardHover} />
+          <CustomButton href="/Dashboard" label="Dashboard" hover={hoverDashboard} handleHover={handleDashboardHover} />
           <CustomButton href="/About" label="About" hover={hoverAbout} handleHover={handleAboutHover} />
           <CustomButton href="/Controls" label="Controls" hover={hoverControls} handleHover={handleControlsHover} />
         </Stack>
@@ -298,12 +345,27 @@ const Home = () => {
           >
             Switch to {mapType === "roadmap" ? "Satellite" : "Roadmap"} view
           </button>
+          <button
+            onMouseEnter={() => handleCardHover(1)}
+            onMouseLeave={() => handleCardHover(1)}
+            style={{ backgroundColor: "#3D3356", color: "white", padding: "10px 30px", border: "none", boxShadow: hoverCard[1] ? "0px 0px 20px 0px #000000" : "none" }}
+            onClick={handleResetLocation}
+          >
+            Reset Location
+          </button>
         </Stack>
         <Stack direction={"column"} padding="20px" gap="20px">
-        
           <GoogleMaps />
 
           <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <button
+              onMouseEnter={() => handleCardHover(6)}
+              onMouseLeave={() => handleCardHover(6)}
+              style={{ backgroundColor: "#3D3356", color: "white", padding: "10px 30px", border: "none", boxShadow: hoverCard[6] ? "0px 0px 20px 0px #000000" : "none" }}
+              onClick={handleTakeOff}
+            >
+              Take Off Drone
+            </button>
             <Card
               onMouseEnter={() => handleCardHover(8)}
               onMouseLeave={() => handleCardHover(8)}
@@ -311,47 +373,35 @@ const Home = () => {
             >
               Task Progress : {droneProgress}%{" "}
             </Card>
+            <button
+              onMouseEnter={() => handleCardHover(7)}
+              onMouseLeave={() => handleCardHover(7)}
+              style={{ backgroundColor: "#3D3356", color: "white", padding: "10px 30px", border: "none", boxShadow: hoverCard[7] ? "0px 0px 20px 0px #000000" : "none" }}
+              onClick={handleLanding}
+            >
+              Landing Drone
+            </button>
           </div>
-          <Stack direction={"column"} padding="10px" gap="10px"></Stack>
         </Stack>
+
+        <Stack direction={"column"} padding="10px" gap="5px" height="50vh">
+          <h3>Live Streaming</h3>
+          <Card>
+            <video autoPlay loop muted poster="https://assets.codepen.io/6093409/river.jpg">
+              <source src="https://assets.codepen.io/6093409/river.mp4" type="video/mp4" />
+            </video>
+          </Card>
+        </Stack>
+
         <Stack direction={"column"} padding="20px" gap="10px">
           <CorCard title="Coordinate Position Drone" value={"Lat : " + droneFlightLtd + " || Lng : " + droneFlightLng} handleCardHover={() => handleCardHover(3)} hoverCard={hoverCard[3]} />
-          <Stack direction={"column"} padding="20px" gap="10px">
-            <Grid container spacing={2} columns={3} width="100%" justifyContent={"center"}>
-              <Grid item xs={1}>
-                <SensorCard title="Status Drone" value={droneStatus} handleCardHover={() => handleCardHover(1)} hoverCard={hoverCard[1]} />
-              </Grid>
-              <Grid item xs={1}>
-                <SensorCard title="Timestamp Drone" value={droneTimestamp} handleCardHover={() => handleCardHover(9)} hoverCard={hoverCard[9]} />
-              </Grid>
-              <Grid item xs={1}>
-                <SensorCard title="Status Battery" value={droneBattery + " %"} handleCardHover={() => handleCardHover(2)} hoverCard={hoverCard[2]} />
-              </Grid>
-              <Grid item xs={1}>
-                <SensorCard title="Altitude Drone" value={droneAltitude} handleCardHover={() => handleCardHover(3)} hoverCard={hoverCard[3]} />
-              </Grid>
-              <Grid item xs={1}>
-                <SensorCard title="Heading Drone" value={droneHeading} handleCardHover={() => handleCardHover(10)} hoverCard={hoverCard[10]} />
-              </Grid>
-            </Grid>
-            <Stack direction={"column"} padding="20px" gap="10px">
-              <Grid container spacing={2} columns={3} width="100%" justifyContent={"center"}>
-                <Grid item xs={1}>
-                  <SensorCard title="Speed Drone (X)" value={droneSpeedX} handleCardHover={() => handleCardHover(4)} hoverCard={hoverCard[4]} />
-                </Grid>
-                <Grid item xs={1}>
-                  <SensorCard title="Speed Drone (Y)" value={droneSpeedY} handleCardHover={() => handleCardHover(10)} hoverCard={hoverCard[10]} />
-                </Grid>
-                <Grid item xs={1}>
-                  <SensorCard title="Speed Drone (Z)" value={droneSpeedZ} handleCardHover={() => handleCardHover(11)} hoverCard={hoverCard[11]} />
-                </Grid>
-              </Grid>
-            </Stack>
-          </Stack>
+          <Grid item xs={1}>
+            <SensorCard title="Altitude Drone" value={droneAltitude} handleCardHover={() => handleCardHover(3)} hoverCard={hoverCard[3]} />
+          </Grid>
         </Stack>
       </Box>
     </Stack>
   );
 };
 
-export default Home;
+export default Controls;

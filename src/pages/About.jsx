@@ -43,7 +43,7 @@ const About = () => {
         <Typography>{daysTime}</Typography>
         <Stack direction={"column"} padding="20px" gap="20px"></Stack>
         <Stack direction="column" spacing={1}>
-          <CustomButton href="/" label="Dashboard" hover={hoverDashboard} handleHover={handleDashboardHover} />
+          <CustomButton href="/Dashboard" label="Dashboard" hover={hoverDashboard} handleHover={handleDashboardHover} />
           <CustomButton href="/About" label="About" hover={hoverAbout} handleHover={handleAboutHover} />
           <CustomButton href="/Controls" label="Controls" hover={hoverControls} handleHover={handleControlsHover} />
         </Stack>
