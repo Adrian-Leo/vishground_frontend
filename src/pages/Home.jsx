@@ -1,33 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { Stack, Typography, Grid, IconButton, Box, Input,Card } from "@mui/material";
-import logo from "../public/logo_1.png";
+import { Stack, Typography, Grid, Card } from "@mui/material";
 import moment from "moment/moment";
-import { Canvas} from "react-three-fiber";
-import { Physics} from "@react-three/cannon";
 import axios from "axios";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from "chart.js";
 import "bootstrap/dist/css/bootstrap.min.css";
 import mqtt from "mqtt/dist/mqtt";
 import CorCard from "./components/CoordinateCard";
 import SensorCard from "./components/SensorCard";
-import Cube from "./components/Cube";
-import CustomButton from "./components/CustomButton";
 import GoogleMaps from "./utility/GoogleMaps";
 import options from "./utility/OptionsMQTT";
 import LocationPin from "./components/LocationPin";
 import LocationDrone from "./components/LocationDrone";
+import NavbarDefault from "./components/Navbar";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-
-
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const Home = () => {
   moment.locale("id");
-  
-  const [hoursTime, setHoursTime] = useState("");
-  const [daysTime, setDaysTime] = useState("");
   const [mapsFlight, setMapsFlight] = useState([]);
   const [droneFlightLtd, setDroneFlightLtd] = useState([]);
   const [droneFlightLng, setDroneFlightLng] = useState([]);
@@ -46,9 +37,8 @@ const Home = () => {
   let arrCoor = [...mapsFlight];
 
   const [titik, setTitik] = useState(0);
-  const serverHeroku = "https://vishback-821ca4854d9a.herokuapp.com/"
+  const serverHeroku = "https://vishback-821ca4854d9a.herokuapp.com/";
   useEffect(() => {
-   
     async function fetchData() {
       const response = await axios.get(`${serverHeroku}/updatesumnode`);
       const dataTitik = response.data;
@@ -70,7 +60,6 @@ const Home = () => {
     }
     fetchData();
   }, [titik]);
-
 
   let totalNode = 20;
 
@@ -121,14 +110,6 @@ const Home = () => {
   }, [titik]);
 
   const [hoverCard, setHoverCard] = useState(Array(nodes.length).fill(false));
-  const [hoverDashboard, setHoverDashboard] = useState(false);
-  const [hoverAbout, setHoverAbout] = useState(false);
-  const [hoverControls, setHoverControls] = useState(false);
-
-  const handleDashboardHover = () => setHoverDashboard(!hoverDashboard);
-  const handleAboutHover = () => setHoverAbout(!hoverAbout);
-  const handleControlsHover = () => setHoverControls(!hoverControls);
-
   const [mapType, setMapType] = useState("roadmap");
 
   const handleViewChange = () => {
@@ -171,17 +152,8 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setHoursTime(moment().format("H:mm:ss"));
-      setDaysTime(moment().format("ddd, DD MMMM YYYY"));
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const port = 	37900;
-    const server = "wss://hairdresser.cloudmqtt.com"
+    const port = 37900;
+    const server = "wss://hairdresser.cloudmqtt.com";
     const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       console.log("MQTT client connected to the server.");
@@ -254,103 +226,72 @@ const Home = () => {
   }, [mapsFlight, droneFlightLng, droneFlightLtd]);
 
   return (
-    <Stack direction={"row"} gap={"30px"}>
-      <Stack flexBasis={"25%"} width={"80%"} maxWidth={"25%"} alignItems="center" gap="10px" sx={{ background: "#000000", height: "100vh", padding: "30px" }}>
-        <img src={logo} alt="Logo" width="120px" />
-
-        <Typography>{hoursTime}</Typography>
-        <Typography>{daysTime}</Typography>
-        <Stack direction={"column"} padding="20px" gap="20px"></Stack>
-        <Stack direction="column" spacing={1}>
-          <CustomButton href="/" label="Dashboard" hover={hoverDashboard} handleHover={handleDashboardHover} />
-          <CustomButton href="/About" label="About" hover={hoverAbout} handleHover={handleAboutHover} />
-          <CustomButton href="/Controls" label="Controls" hover={hoverControls} handleHover={handleControlsHover} />
-        </Stack>
-        <Stack direction={"column"} padding="20px" gap="0px"></Stack>
-
-        <Canvas dpr={[1, 2]} shadows camera={{ position: [-5, 5, 5], fov: 18 }}>
-          <ambientLight />
-          <spotLight angle={0.25} penumbra={0.5} position={[10, 10, 3]} castShadow />
-          <Physics allowSleep={true}>
-            <Cube />
-          </Physics>
-        </Canvas>
-      </Stack>
-
-      <Box flexBasis={"100%"} width={"100%"} sx={{ overflowY: "scroll", maxHeight: "100vh" }}>
-        <Typography
-          sx={{
-            color: "#BA365D",
-            fontSize: "30px",
-            margin: "20px auto",
-            fontWeight: "bold",
-          }}
-          textAlign="center"
-        >
-          Controls Unnamed Drone
-        </Typography>
-        <Stack direction={"row"} gap={"10px"} padding="20px">
-          <button
-            onMouseEnter={() => handleCardHover(24)}
-            onMouseLeave={() => handleCardHover(24)}
-            style={{ backgroundColor: "#3D3356", color: "white", padding: "10px 30px", border: "none", boxShadow: hoverCard[24] ? "0px 0px 20px 0px #000000" : "none" }}
-            onClick={handleViewChange}
+    <>
+      <NavbarDefault />
+      <div style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
+        <div style={{ flexBasis: "100%", width: "100%", maxHeight: "100%" }}>
+          <Typography
+            style={{
+              color: "#BA365D",
+              fontSize: "30px",
+              margin: "20px auto",
+              fontWeight: "bold",
+            }}
+            textAlign="center"
           >
-            Switch to {mapType === "roadmap" ? "Satellite" : "Roadmap"} view
-          </button>
-        </Stack>
-        <Stack direction={"column"} padding="20px" gap="20px">
-        
-          <GoogleMaps />
-
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <Card
-              onMouseEnter={() => handleCardHover(8)}
-              onMouseLeave={() => handleCardHover(8)}
-              style={{ backgroundColor: "#3D3356", color: "white", padding: "10px 30px", border: "none", boxShadow: hoverCard[8] ? "0px 0px 20px 0px #000000" : "none" }}
-            >
-              Task Progress : {droneProgress}%{" "}
-            </Card>
+            Controls Unnamed Drone
+          </Typography>
+          <div style={{ display: "flex", flexDirection: "row", gap: "10px", padding: "20px" }}>
+            <button className="bg-purple-light hover:bg-purple-dark hover:shadow-2xl w-56 h-12" onClick={handleViewChange}>
+              Switch to {mapType === "roadmap" ? "Satellite" : "Roadmap"} view
+            </button>
           </div>
-          <Stack direction={"column"} padding="10px" gap="10px"></Stack>
-        </Stack>
-        <Stack direction={"column"} padding="20px" gap="10px">
-          <CorCard title="Coordinate Position Drone" value={"Lat : " + droneFlightLtd + " || Lng : " + droneFlightLng} handleCardHover={() => handleCardHover(3)} hoverCard={hoverCard[3]} />
-          <Stack direction={"column"} padding="20px" gap="10px">
-            <Grid container spacing={2} columns={3} width="100%" justifyContent={"center"}>
-              <Grid item xs={1}>
-                <SensorCard title="Status Drone" value={droneStatus} handleCardHover={() => handleCardHover(1)} hoverCard={hoverCard[1]} />
-              </Grid>
-              <Grid item xs={1}>
-                <SensorCard title="Timestamp Drone" value={droneTimestamp} handleCardHover={() => handleCardHover(9)} hoverCard={hoverCard[9]} />
-              </Grid>
-              <Grid item xs={1}>
-                <SensorCard title="Status Battery" value={droneBattery + " %"} handleCardHover={() => handleCardHover(2)} hoverCard={hoverCard[2]} />
-              </Grid>
-              <Grid item xs={1}>
-                <SensorCard title="Altitude Drone" value={droneAltitude} handleCardHover={() => handleCardHover(3)} hoverCard={hoverCard[3]} />
-              </Grid>
-              <Grid item xs={1}>
-                <SensorCard title="Heading Drone" value={droneHeading} handleCardHover={() => handleCardHover(10)} hoverCard={hoverCard[10]} />
-              </Grid>
-            </Grid>
-            <Stack direction={"column"} padding="20px" gap="10px">
+          <div style={{ display: "flex", flexDirection: "column", padding: "20px", gap: "20px" }}>
+            <GoogleMaps />
+
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <div className="flex flex-col bg-purple-light hover:bg-purple-dark hover:shadow-2xl w-56 h-12 items-center place-content-center">Task Progress : {droneProgress}%</div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", padding: "10px", gap: "10px" }}></div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", padding: "20px", gap: "10px" }}>
+            <CorCard title="Coordinate Position Drone" value={"Lat : " + droneFlightLtd + " || Lng : " + droneFlightLng} />
+            <div style={{ display: "flex", flexDirection: "column", padding: "20px", gap: "10px" }}>
               <Grid container spacing={2} columns={3} width="100%" justifyContent={"center"}>
                 <Grid item xs={1}>
-                  <SensorCard title="Speed Drone (X)" value={droneSpeedX} handleCardHover={() => handleCardHover(4)} hoverCard={hoverCard[4]} />
+                  <SensorCard title="Status Drone" value={droneStatus} />
                 </Grid>
                 <Grid item xs={1}>
-                  <SensorCard title="Speed Drone (Y)" value={droneSpeedY} handleCardHover={() => handleCardHover(10)} hoverCard={hoverCard[10]} />
+                  <SensorCard title="Timestamp Drone" value={droneTimestamp} />
                 </Grid>
                 <Grid item xs={1}>
-                  <SensorCard title="Speed Drone (Z)" value={droneSpeedZ} handleCardHover={() => handleCardHover(11)} hoverCard={hoverCard[11]} />
+                  <SensorCard title="Status Battery" value={droneBattery + " %"} />
+                </Grid>
+                <Grid item xs={1}>
+                  <SensorCard title="Altitude Drone" value={droneAltitude} />
+                </Grid>
+                <Grid item xs={1}>
+                  <SensorCard title="Heading Drone" value={droneHeading} />
                 </Grid>
               </Grid>
-            </Stack>
-          </Stack>
-        </Stack>
-      </Box>
-    </Stack>
+              <div style={{ display: "flex", flexDirection: "column", padding: "20px", gap: "10px" }}>
+                <Grid container spacing={2} columns={3} width="100%" justifyContent={"center"}>
+                  <Grid item xs={1}>
+                    <SensorCard title="Speed Drone (X)" value={droneSpeedX} />
+                  </Grid>
+                  <Grid item xs={1}>
+                    <SensorCard title="Speed Drone (Y)" value={droneSpeedY} />
+                  </Grid>
+                  <Grid item xs={1}>
+                    <SensorCard title="Speed Drone (Z)" value={droneSpeedZ} />
+                  </Grid>
+                </Grid>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 
