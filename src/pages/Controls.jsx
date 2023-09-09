@@ -285,7 +285,7 @@ const Controls = () => {
               Reset Location
             </button>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", padding: "20px", gap: "20px" }}>
+          <div style={{ display: "flex", flexDirection: "column", padding: "20px", gap: "20px" }} className="h-full">
             <GoogleMaps />
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <button className="bg-purple-light hover:bg-purple-dark hover:shadow-2xl w-40 h-12" onClick={handleTakeOff}>
@@ -297,9 +297,9 @@ const Controls = () => {
               </button>
             </div>
           </div>
-          <div className="flex flex-col h-full p-8">
+          <div className="flex flex-col h-full w-full p-8 items-center">
             <h3>Live Streaming</h3>
-            <div>
+            <div className="place-content-center">
               <video autoPlay loop muted poster="https://assets.codepen.io/6093409/river.jpg">
                 <source src="https://assets.codepen.io/6093409/river.mp4" type="video/mp4" />
               </video>
