@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGhost } from "@fortawesome/free-solid-svg-icons";
 
 const PageNotFound = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -7,10 +9,12 @@ const PageNotFound = () => {
     setIsOpen(!isOpen);
   };
   return (
-    <div className={`${isOpen ? "fixed h-screen w-full" : ""} flex flex-col min-h-screen min-w-[300px]`}>
-      <div className="flex flex-col mx-20 h-full justify-center items-center">
-        <Drone />
-        <p className="text-center absolute bottom-0 mb-6"> Halaman Sedang Maintenance Yach...</p>
+    <div className="flex flex-col h-screen w-screen">
+      <div className="flex flex-col mx-20 h-full justify-center items-center place-content-center">
+        <div className="items-center">
+          <FontAwesomeIcon icon={faGhost} className="w-40 h-40 animate-bounce" />
+        </div>
+        <p className="text-center mt-4"> Halaman Yang Di Tuju Tidak Ada ....</p>
       </div>
     </div>
   );
