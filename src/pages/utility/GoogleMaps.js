@@ -13,3 +13,28 @@ export default function GoogleMaps () {
     </div>
   )
 }
+
+// import React from 'react'
+// import { GoogleMap, LoadScript } from '@react-google-maps/api'
+
+// const containerStyle = {
+//   width: '100%',
+//   height: '80vh'
+// }
+
+// const center = {
+//   lat: 40.7128, // Replace with your desired latitude
+//   lng: -74.006 // Replace with your desired longitude
+// }
+
+// function GoogleMaps () {
+//   return (
+//     <LoadScript googleMapsApiKey='AIzaSyCUbCuHFQ2n2EuFm3hK60iEWq7M-oF35kM'>
+//       <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={10}>
+//         {/* Add markers, polygons, or other map elements here */}
+//       </GoogleMap>
+//     </LoadScript>
+//   )
+// }
+
+// export default GoogleMaps

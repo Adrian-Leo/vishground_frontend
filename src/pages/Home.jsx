@@ -12,6 +12,7 @@ import options from "./utility/OptionsMQTT";
 import LocationPin from "./components/LocationPin";
 import LocationDrone from "./components/LocationDrone";
 import NavbarDefault from "./components/Navbar";
+import ConfirmDialog from "./components/ConfirmDialog";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
@@ -37,6 +38,16 @@ const Home = () => {
   let arrCoor = [...mapsFlight];
 
   const [titik, setTitik] = useState(0);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleOpenDialog = () => {
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+  };
+
   const serverHeroku = "https://vishback-821ca4854d9a.herokuapp.com/";
   useEffect(() => {
     async function fetchData() {
@@ -229,6 +240,8 @@ const Home = () => {
     <>
       <NavbarDefault />
       <div style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
+        <ConfirmDialog open={dialogOpen} handleClose={handleCloseDialog} />
+
         <div style={{ flexBasis: "100%", width: "100%", maxHeight: "100%" }}>
           <Typography
             style={{
@@ -251,6 +264,9 @@ const Home = () => {
 
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <div className="flex flex-col bg-purple-light hover:bg-purple-dark hover:shadow-2xl w-56 h-12 items-center place-content-center">Task Progress : {droneProgress}%</div>
+              <button className="bg-purple-light hover:bg-purple-dark hover:shadow-2xl w-56 h-12" onClick={handleOpenDialog}>
+                Confirm Waypoint
+              </button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", padding: "10px", gap: "10px" }}></div>
           </div>
