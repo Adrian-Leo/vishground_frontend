@@ -14,7 +14,7 @@ export default function GoogleMaps () {
       ></iframe> */}
           <GoogleMapReact
               bootstrapURLKeys={{
-                key: "AIzaSyD3RzE2fq7JvhFmDTbXyjj22jqIAytT7XU",
+                key: "AIzaSyAQhpgh7axWcIaO_G4YjpHROf0XnfqmSlo",
                 language: "id",
               }}
               defaultCenter={defaultProps.center}
