@@ -286,34 +286,8 @@ const Controls = () => {
             </button>
           </div>
           <div style={{ display: "flex", flexDirection: "column", padding: "20px", gap: "20px" }} className="h-full">
-            {/* <GoogleMaps /> */}
-            <GoogleMapReact
-              bootstrapURLKeys={{
-                key: "AIzaSyAQhpgh7axWcIaO_G4YjpHROf0XnfqmSlo",
-                language: "id",
-              }}
-              defaultCenter={defaultProps.center}
-              defaultZoom={defaultProps.zoom}
-              options={{ mapTypeId: mapType }}
-              onClick={(e) => {
-                if (mapsFlightLtd.length < titik) {
-                  let arr = [...mapsFlight];
-                  let arr1 = [...mapsFlightLtd];
-                  let arr2 = [...mapsFlightLng];
-                  arr.push({ lat: e.lat, lng: e.lng });
-                  arr1.push(e.lat);
-                  arr2.push(e.lng);
-                  setMapsFlight(arr);
-                  setMapsFlightLtd(arr1);
-                  setMapsFlightLng(arr2);
-                }
-              }}
-            >
-              <LocationDrone lat={droneFlightLtd} lng={droneFlightLng} text="Drone" color="white" startLat={droneFlightLtd} startLong={droneFlightLng} />
-              {mapsFlightLtd?.map((lat, idx) => (
-                <LocationPin lat={lat} lng={mapsFlightLng[idx]} text={`Node ${idx + 1}`} color="yellow" />
-              ))}
-            </GoogleMapReact>
+            <GoogleMaps />
+            
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <button className="bg-purple-light hover:bg-purple-dark hover:shadow-2xl w-40 h-12" onClick={handleTakeOff}>
                 Take Off Drone
