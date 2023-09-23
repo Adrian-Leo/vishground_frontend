@@ -160,9 +160,10 @@ const Home = () => {
     pitch: 0.0,
     roll: 0.0,
     att: 0.0,
-    lat: 4.6144,
-    lng: 105.2245,
+    lat: -4.6140971,
+    lng: 105.224446,
   });
+
 
 
 
@@ -172,8 +173,8 @@ const Home = () => {
       lng: attitude.lng,
     },
     fly: {
-      lat: -6.3648,
-      lng: 106.8245,
+    lat: -4.6140971,
+    lng: 105.224446,
     },
     zoom: 18,
     options: {
