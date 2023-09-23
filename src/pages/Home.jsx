@@ -12,10 +12,14 @@ import options from "./utility/OptionsMQTT";
 import LocationPin from "./components/LocationPin";
 import LocationDrone from "./components/LocationDrone";
 import NavbarDefault from "./components/Navbar";
+import GoogleMapReact from "google-map-react";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+
+
 
 const Home = () => {
   moment.locale("id");
@@ -33,6 +37,33 @@ const Home = () => {
   const [droneProgress, setDroneProgress] = useState([]);
   const [droneHeading, setDroneHeading] = useState([]);
   const [droneTimestamp, setDroneTimeStamp] = useState([]);
+  
+
+  const handleResetLocation = () => {
+    setMapsFlight([]);
+    setMapsFlightLtd([]);
+    setMapsFlightLng([]);
+    setTitik(0);
+
+    axios
+      .post("https://vtol-cigritous-backend.herokuapp.com/resetsum")
+      .then((response) => {
+        console.log(response.data); // log the response from the server
+      })
+      .catch((error) => {
+        console.log(error); // log any errors that occurred during the request
+      });
+
+    axios
+      .post("https://vtol-cigritous-backend.herokuapp.com/resetcor")
+      .then((response) => {
+        console.log(response.data); // log the response from the server
+      })
+      .catch((error) => {
+        console.log(error); // log any errors that occurred during the request
+      });
+  };
+
 
   let arrCoor = [...mapsFlight];
 
@@ -121,6 +152,8 @@ const Home = () => {
     newHoverCard[index] = !newHoverCard[index];
     setHoverCard(newHoverCard);
   };
+
+  
 
   const [attitude, setAttitude] = useState({
     yaw: 0.0,
@@ -247,8 +280,57 @@ const Home = () => {
             </button>
           </div>
           <div style={{ display: "flex", flexDirection: "column", padding: "20px", gap: "20px" }}>
-            <GoogleMaps />
-           
+            {/* <GoogleMaps /> */}
+          <Stack direction={"column"} padding="20px" gap="20px">
+            <Stack style={{ height: "50vh", width: "100%" }}>
+              <GoogleMapReact
+                bootstrapURLKeys={{
+                  key: "AIzaSyAQhpgh7axWcIaO_G4YjpHROf0XnfqmSlo",
+                  language: "id",
+                }}
+                defaultCenter={defaultProps.center}
+                defaultZoom={defaultProps.zoom}
+                options={{ mapTypeId: mapType }}
+                onClick={(e) => {
+                  if (mapsFlightLtd.length < titik) {
+                    let arr = [...mapsFlight];
+                    let arr1 = [...mapsFlightLtd];
+                    let arr2 = [...mapsFlightLng];
+                    arr.push({ lat: e.lat, lng: e.lng });
+                    arr1.push(e.lat);
+                    arr2.push(e.lng);
+                    setMapsFlight(arr);
+                    setMapsFlightLtd(arr1);
+                    setMapsFlightLng(arr2);
+                  }
+                }}
+              >
+                <LocationDrone lat={droneFlightLtd} lng={droneFlightLng} text="Drone" color="white" startLat={droneFlightLtd} startLong={droneFlightLng} />
+                {mapsFlightLtd?.map((lat, idx) => (
+                  <LocationPin lat={lat} lng={mapsFlightLng[idx]} text={`Node ${idx + 1}`} color="yellow" />
+                ))}
+              </GoogleMapReact>
+            </Stack>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <button
+                onMouseEnter={() => handleCardHover(24)}
+                onMouseLeave={() => handleCardHover(24)}
+                style={{ backgroundColor: "#3D3356", color: "white", padding: "10px 30px", border: "none", boxShadow: hoverCard[24] ? "0px 0px 20px 0px #000000" : "none" }}
+                onClick={handleViewChange}
+              >
+                Switch to {mapType === "roadmap" ? "Satellite" : "Roadmap"} view
+              </button>
+              <button
+                onMouseEnter={() => handleCardHover(1)}
+                onMouseLeave={() => handleCardHover(1)}
+                style={{ backgroundColor: "#3D3356", color: "white", padding: "10px 30px", border: "none", boxShadow: hoverCard[1] ? "0px 0px 20px 0px #000000" : "none" }}
+                onClick={handleResetLocation}
+              >
+                Reset Location
+              </button>
+            </div>
+            <Stack direction={"column"} padding="10px" gap="10px"></Stack>
+           </Stack>
 
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <div className="flex flex-col bg-purple-light hover:bg-purple-dark hover:shadow-2xl w-56 h-12 items-center place-content-center">Task Progress : {droneProgress}%</div>
