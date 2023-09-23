@@ -160,9 +160,11 @@ const Home = () => {
     pitch: 0.0,
     roll: 0.0,
     att: 0.0,
-    lat: -6.365232,
-    lng: 106.824506,
+    lat: 4.6144,
+    lng: 105.2245,
   });
+
+
 
   const defaultProps = {
     center: {
