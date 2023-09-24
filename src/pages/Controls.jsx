@@ -26,7 +26,7 @@ const port = 37900;
 const Controls = () => {
   moment.locale("id");
   const [mapsFlight, setMapsFlight] = useState([]);
-  const [droneMode, setDroneMode] = useState([]);
+  const [droneMode, setDroneMode] = useState("");
   const [droneFlightLtd, setDroneFlightLtd] = useState([]);
   const [droneFlightLng, setDroneFlightLng] = useState([]);
   const [mapsFlightLtd, setMapsFlightLtd] = useState([]);
@@ -411,7 +411,7 @@ const Controls = () => {
               aria-expanded={open ? 'true' : undefined}
               onClick={handleClick}
             >
-              {droneStatus}
+              {droneMode}
             </Button>
               <Menu
                 id="mode-menu"
