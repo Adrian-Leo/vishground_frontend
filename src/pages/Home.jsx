@@ -7,11 +7,12 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import mqtt from "mqtt/dist/mqtt";
 import CorCard from "./components/CoordinateCard";
 import SensorCard from "./components/SensorCard";
-import GoogleMaps from "./utility/GoogleMaps";
 import options from "./utility/OptionsMQTT";
 import LocationPin from "./components/LocationPin";
 import LocationDrone from "./components/LocationDrone";
 import NavbarDefault from "./components/Navbar";
+import GoogleMaps from "./components/GoogleMaps";
+
 import GoogleMapReact from "google-map-react";
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -24,8 +25,10 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 const Home = () => {
   moment.locale("id");
   const [mapsFlight, setMapsFlight] = useState([]);
-  const [droneFlightLtd, setDroneFlightLtd] = useState([]);
-  const [droneFlightLng, setDroneFlightLng] = useState([]);
+  const [droneFlightLtd, setDroneFlightLtd] = useState(null);
+  const [droneFlightLng, setDroneFlightLng] = useState(null);
+  const [markers, setMarkers] = useState([]);
+  const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(null);
   const [mapsFlightLtd, setMapsFlightLtd] = useState([]);
   const [mapsFlightLng, setMapsFlightLng] = useState([]);
   const [droneStatus, setDroneStatus] = useState([]);
@@ -160,32 +163,15 @@ const Home = () => {
     pitch: 0.0,
     roll: 0.0,
     att: 0.0,
-    lat: -4.6140971,
-    lng: 105.224446,
+    // lat: -4.6140971,
+    // lng: 105.224446,
+    lat: 47.3977423,
+    lng: 8.5455925,
   });
 
-
-
-
-  const defaultProps = {
-    center: {
-      lat: attitude.lat,
-      lng: attitude.lng,
-    },
-    fly: {
-    lat: -4.6140971,
-    lng: 105.224446,
-    },
-    zoom: 18,
-    options: {
-      disableDefaultUI: true,
-      dragging: false,
-      scrollwheel: false,
-      panControl: false,
-      zoomControl: false,
-      gestureHandling: "none",
-    },
-  };
+  //lanud
+  // lat: -4.6140971,
+  // lng: 105.224446,
 
   useEffect(() => {
     const port = 37900;
@@ -261,6 +247,32 @@ const Home = () => {
     };
   }, [mapsFlight, droneFlightLng, droneFlightLtd]);
 
+  const defaultProps = {
+    center: {
+      //edit jordhie: kalo null bakal ke default hardcode, kalo ga null harusnya ke
+      //lokasi drone
+      lat: droneFlightLtd !== null ? droneFlightLtd : attitude.lat,
+      lng: droneFlightLng !== null ? droneFlightLng : attitude.lng,
+      // lat: attitude.lat,
+      // lng: attitude.lng,
+      // lat: droneFlightLtd,
+      // lng: droneFlightLng,
+    },
+    fly: {
+      lat: droneFlightLtd,
+      lng: droneFlightLng,
+    },
+    zoom: 18,
+    options: {
+      disableDefaultUI: true,
+      dragging: false,
+      scrollwheel: false,
+      panControl: false,
+      zoomControl: false,
+      gestureHandling: "none",
+    },
+  };
+
   return (
     <>
       <NavbarDefault />
@@ -286,6 +298,19 @@ const Home = () => {
             {/* <GoogleMaps /> */}
           <Stack direction={"column"} padding="20px" gap="20px">
             <Stack style={{ height: "50vh", width: "100%" }}>
+            {/* <GoogleMaps
+              droneLocation={{
+                lat: droneFlightLtd,
+                lng: droneFlightLng,
+              }}
+              center={{
+                lat: droneFlightLtd !== null ? droneFlightLtd : attitude.lat,
+                lng: droneFlightLng !== null ? droneFlightLng : attitude.lng,
+              }}
+              zoom={18}
+              markers={markers} // Pass the markers state
+              // handleMarkerClick={handleMarkerClick} // Pass the handleMarkerClick function
+            /> */}
               <GoogleMapReact
                 bootstrapURLKeys={{
                   key: "AIzaSyAQhpgh7axWcIaO_G4YjpHROf0XnfqmSlo",
@@ -295,22 +320,41 @@ const Home = () => {
                 defaultZoom={defaultProps.zoom}
                 options={{ mapTypeId: mapType }}
                 onClick={(e) => {
-                  if (mapsFlightLtd.length < titik) {
-                    let arr = [...mapsFlight];
-                    let arr1 = [...mapsFlightLtd];
-                    let arr2 = [...mapsFlightLng];
-                    arr.push({ lat: e.lat, lng: e.lng });
-                    arr1.push(e.lat);
-                    arr2.push(e.lng);
-                    setMapsFlight(arr);
-                    setMapsFlightLtd(arr1);
-                    setMapsFlightLng(arr2);
-                  }
+                  // Create a new marker object with the clicked latitude and longitude
+                  const newMarker = {
+                    lat: e.lat,
+                    lng: e.lng,
+                  };
+
+                  // Add the new marker to the markers state
+                  setMarkers([...markers, newMarker]);
                 }}
               >
-                <LocationDrone lat={droneFlightLtd} lng={droneFlightLng} text="Drone" color="white" startLat={droneFlightLtd} startLong={droneFlightLng} />
+                <LocationDrone lat={droneFlightLtd} lng={droneFlightLng} text="Drone" color="black" startLat={droneFlightLtd} startLong={droneFlightLng} />
                 {mapsFlightLtd?.map((lat, idx) => (
                   <LocationPin lat={lat} lng={mapsFlightLng[idx]} text={`Node ${idx + 1}`} color="yellow" />
+                ))}
+
+                {/* Render new waypoints */}
+                {markers.map((marker, index) => (
+                  <LocationPin
+                    key={index}
+                    lat={marker.lat}
+                    lng={marker.lng}
+                    text={`Waypoint ${index + 1}`}
+                    color={selectedMarkerIndex === index ? "red" : "blue"} // Highlight the selected marker
+                    onClick={() => {
+                      // If the marker is already selected, remove it
+                      if (selectedMarkerIndex === index) {
+                        const updatedMarkers = markers.filter((_, i) => i !== index);
+                        setMarkers(updatedMarkers);
+                        setSelectedMarkerIndex(null); // Deselect the marker
+                      } else {
+                        // Deselect any previously selected marker
+                        setSelectedMarkerIndex(index);
+                      }
+                    }}
+                  />
                 ))}
               </GoogleMapReact>
             </Stack>
