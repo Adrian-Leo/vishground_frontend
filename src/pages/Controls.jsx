@@ -50,6 +50,7 @@ const Controls = () => {
     client.on("connect", () => {
       client.publish("/drone/set_mode", "MANUAL");
     });
+    setAnchorEl(null);
   }
 
   const handleCloseAcro = () => {
@@ -57,6 +58,7 @@ const Controls = () => {
     client.on("connect", () => {
       client.publish("/drone/set_mode", "ACRO");
     });
+    setAnchorEl(null);
   }
 
   const handleCloseAltitude = () => {
@@ -64,6 +66,7 @@ const Controls = () => {
     client.on("connect", () => {
       client.publish("/drone/set_mode", "ALTITUDE");
     });
+    setAnchorEl(null);
   }
 
   const handleCloseHold = () => {
@@ -71,6 +74,7 @@ const Controls = () => {
     client.on("connect", () => {
       client.publish("/drone/set_mode", "HOLD");
     });
+    setAnchorEl(null);
   }
 
   const handleClosePosition = () => {
@@ -78,6 +82,7 @@ const Controls = () => {
     client.on("connect", () => {
       client.publish("/drone/set_mode", "POSITION");
     });
+    setAnchorEl(null);
   }
 
   const handleCloseMission = () => {
@@ -85,6 +90,7 @@ const Controls = () => {
     client.on("connect", () => {
       client.publish("/drone/set_mode", "MISSION");
     });
+    setAnchorEl(null);
   }
 
   const handleCloseOffboard = () => {
@@ -92,6 +98,7 @@ const Controls = () => {
     client.on("connect", () => {
       client.publish("/drone/set_mode", "OFFBOARD");
     });
+    setAnchorEl(null);
   }
 
   const handleCloseReturn = () => {
@@ -99,6 +106,7 @@ const Controls = () => {
     client.on("connect", () => {
       client.publish("/drone/set_mode", "RTL");
     });
+    setAnchorEl(null);
   }
 
   const handleCloseStabilized = () => {
@@ -106,6 +114,7 @@ const Controls = () => {
     client.on("connect", () => {
       client.publish("/drone/set_mode", "STABILIZED");
     });
+    setAnchorEl(null);
   }
 
   let arrCoor = [...mapsFlight];
