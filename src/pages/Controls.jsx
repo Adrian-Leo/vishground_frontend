@@ -302,7 +302,6 @@ const Controls = () => {
 
     console.log("masuk config");
     client.on("message", (topic, message) => {
-      console.log("tessss");
       if (topic === "/drone/status") {
         setDroneStatus(message);
         // if (message.toString() === "0") {
@@ -313,6 +312,7 @@ const Controls = () => {
       }
       if (topic === "/drone/mode"){
         let mode = message.toString();
+        console.log(message);
         if(mode === "AUTO.LOITER"){
           setDroneMode("HOLD");
         }else if(mode === "AUTO.MISSION"){
