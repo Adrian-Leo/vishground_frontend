@@ -311,7 +311,8 @@ const Controls = () => {
         // }
       }
       if (topic === "/drone/mode"){
-        let mode = message.toString();
+        // let mode = message.toString();
+        let mode = JSON.parse(message);
         console.log(message);
         if(mode === "AUTO.LOITER"){
           setDroneMode("HOLD");
@@ -411,7 +412,7 @@ const Controls = () => {
               aria-expanded={open ? 'true' : undefined}
               onClick={handleClick}
             >
-              {droneStatus.toString()}
+              {droneStatus}
             </Button>
               <Menu
                 id="mode-menu"
