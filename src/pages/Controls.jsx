@@ -14,12 +14,19 @@ import options from "./utility/OptionsMQTT";
 import { handleTakeOff, handleLanding } from "./utility/FlightHandling";
 import NavbarDefault from "./components/Navbar";
 import GoogleMapReact from "google-map-react";
+import Button from '@mui/material/Button';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+const server = "wss://hairdresser.cloudmqtt.com";
+const port = 37900;
 
 const Controls = () => {
   moment.locale("id");
   const [mapsFlight, setMapsFlight] = useState([]);
+  const [droneMode, setDroneMode] = useState([]);
   const [droneFlightLtd, setDroneFlightLtd] = useState([]);
   const [droneFlightLng, setDroneFlightLng] = useState([]);
   const [mapsFlightLtd, setMapsFlightLtd] = useState([]);
@@ -27,11 +34,76 @@ const Controls = () => {
   const [droneProgress, setDroneProgress] = useState([]);
   const [droneStatus, setDroneStatus] = useState([]);
   const [droneAltitude, setDroneAltitude] = useState([]);
+  const [anchorEl, setAnchorEl] = useState([]);
+  const [client, setClient] = useState([]);
 
+  useEffect(() => {
+    // const cli = mqtt.connect(`${server}:${port}`, options);
+    // setClient(cli);
+  }, []);
 
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
+  const handleCloseManual = () => {
+    client.on("connect", () => {
+      client.publish("/drone/set_mode", "MANUAL");
+    });
+  }
 
+  const handleCloseAcro = () => {
+    client.on("connect", () => {
+      client.publish("/drone/set_mode", "ACRO");
+    });
+  }
+
+  const handleCloseAltitude = () => {
+    client.on("connect", () => {
+      client.publish("/drone/set_mode", "ALTITUDE");
+    });
+  }
+
+  const handleCloseHold = () => {
+    client.on("connect", () => {
+      client.publish("/drone/set_mode", "HOLD");
+    });
+  }
+
+  const handleClosePosition = () => {
+    client.on("connect", () => {
+      client.publish("/drone/set_mode", "POSITION");
+    });
+  }
+
+  const handleCloseMission = () => {
+    client.on("connect", () => {
+      client.publish("/drone/set_mode", "MISSION");
+    });
+  }
+
+  const handleCloseOffboard = () => {
+    client.on("connect", () => {
+      client.publish("/drone/set_mode", "OFFBOARD");
+    });
+  }
+
+  const handleCloseReturn = () => {
+    client.on("connect", () => {
+      client.publish("/drone/set_mode", "RTL");
+    });
+  }
+
+  const handleCloseStabilized = () => {
+    client.on("connect", () => {
+      client.publish("/drone/set_mode", "STABILIZED");
+    });
+  }
 
   let arrCoor = [...mapsFlight];
 
@@ -182,11 +254,9 @@ const Controls = () => {
   };
 
   useEffect(() => {
-    const port = 37900;
-    const server = "wss://hairdresser.cloudmqtt.com";
-    const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       console.log("MQTT client connected to the server.");
+      client.subscribe("/drone/mode")
       client.subscribe("/drone/status");
       client.subscribe("/drone/progress");
       client.subscribe("/drone/lat");
@@ -221,11 +291,15 @@ const Controls = () => {
     client.on("message", (topic, message) => {
       console.log("tessss");
       if (topic === "/drone/status") {
-        if (message.toString() === "0") {
-          setDroneStatus("Disarmed");
-        } else if (message.toString() === "1") {
-          setDroneStatus("Armed");
-        }
+        setDroneStatus(message);
+        // if (message.toString() === "0") {
+        //   setDroneStatus("Disarmed");
+        // } else if (message.toString() === "1") {
+        //   setDroneStatus("Armed");
+        // }
+      }
+      if (topic === "/drone/mode"){
+        setDroneMode(message);
       }
       if (topic === "/drone/progress") {
         setDroneProgress(message.toString());
@@ -294,13 +368,36 @@ const Controls = () => {
           >
             Controls Unnamed Drone
           </Typography>
-          <div style={{ display: "flex", flexDirection: "row", gap: "10px", padding: "20px" }}>
-            <button className="bg-purple-light hover:bg-purple-dark hover:shadow-2xl w-56 h-12" onClick={handleViewChange}>
-              Switch to {mapType === "roadmap" ? "Satellite" : "Roadmap"} view
-            </button>
-            <button className="bg-purple-light hover:bg-purple-dark hover:shadow-2xl w-40 h-12" onClick={handleResetLocation}>
-              Reset Location
-            </button>
+          <div className="flex justify-between ml-[40px] w-fit bg-purple-light hover:bg-purple-dark">
+            <Button
+              id="mode-button"
+              className="text-white px-4"
+              aria-controls={open ? 'mode-menu' : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? 'true' : undefined}
+              onClick={handleClick}
+            >
+              {}
+            </Button>
+              <Menu
+                id="mode-menu"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+                MenuListProps={{
+                  'aria-labelledby': 'mode-button',
+                }}
+              >
+                <MenuItem onClick={handleCloseManual} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>MANUAL</MenuItem>
+                <MenuItem onClick={handleCloseAcro} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>ACRO</MenuItem>
+                <MenuItem onClick={handleCloseAltitude} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>ALTITUDE</MenuItem>
+                <MenuItem onClick={handleClosePosition} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>POSITION</MenuItem>
+                <MenuItem onClick={handleCloseStabilized} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>STABILIZED</MenuItem>
+                <MenuItem onClick={handleCloseOffboard} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>OFFBOARD</MenuItem>
+                <MenuItem onClick={handleCloseHold} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>HOLD</MenuItem>
+                <MenuItem onClick={handleCloseMission} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>MISSION</MenuItem>
+                <MenuItem onClick={handleCloseReturn} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>RETURN</MenuItem>
+              </Menu>
           </div>
           <div style={{ display: "flex", flexDirection: "column", padding: "20px", gap: "20px" }} className="h-full">
           <Stack direction={"column"} padding="20px" gap="20px">
