@@ -303,7 +303,28 @@ const Controls = () => {
         // }
       }
       if (topic === "/drone/mode"){
-        setDroneMode(message);
+        let mode = message.toString();
+        if(mode === "AUTO.LOITER"){
+          setDroneMode("HOLD");
+        }else if(mode === "AUTO.MISSION"){
+          setDroneMode("MISSION");
+        }else if(mode === "AUTO.RTL"){
+          setDroneMode("RETURN");
+        }else if(mode === "AUTO.LAND"){
+          setDroneMode("LAND");
+        }else if(mode === "STABILIZED"){
+          setDroneMode("STABILIZED");
+        }else if(mode === "OFFBOARD"){
+          setDroneMode("OFFBOARD");
+        }else if(mode === "POSCTL"){
+          setDroneMode("POSITION");
+        }else if(mode === "ALTCTL"){
+          setDroneMode("ALTITUDE");
+        }else if(mode === "ACRO"){
+          setDroneMode("ACRO");
+        }else if(mode === "MANUAL"){
+          setDroneMode("MANUAL");
+        }
       }
       if (topic === "/drone/progress") {
         setDroneProgress(message.toString());
