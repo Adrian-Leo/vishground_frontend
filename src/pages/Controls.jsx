@@ -35,12 +35,6 @@ const Controls = () => {
   const [droneStatus, setDroneStatus] = useState([]);
   const [droneAltitude, setDroneAltitude] = useState([]);
   const [anchorEl, setAnchorEl] = useState([]);
-  const [client, setClient] = useState([]);
-
-  useEffect(() => {
-    // const cli = mqtt.connect(`${server}:${port}`, options);
-    // setClient(cli);
-  }, []);
 
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
@@ -52,54 +46,63 @@ const Controls = () => {
   };
 
   const handleCloseManual = () => {
+    const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       client.publish("/drone/set_mode", "MANUAL");
     });
   }
 
   const handleCloseAcro = () => {
+    const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       client.publish("/drone/set_mode", "ACRO");
     });
   }
 
   const handleCloseAltitude = () => {
+    const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       client.publish("/drone/set_mode", "ALTITUDE");
     });
   }
 
   const handleCloseHold = () => {
+    const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       client.publish("/drone/set_mode", "HOLD");
     });
   }
 
   const handleClosePosition = () => {
+    const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       client.publish("/drone/set_mode", "POSITION");
     });
   }
 
   const handleCloseMission = () => {
+    const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       client.publish("/drone/set_mode", "MISSION");
     });
   }
 
   const handleCloseOffboard = () => {
+    const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       client.publish("/drone/set_mode", "OFFBOARD");
     });
   }
 
   const handleCloseReturn = () => {
+    const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       client.publish("/drone/set_mode", "RTL");
     });
   }
 
   const handleCloseStabilized = () => {
+    const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       client.publish("/drone/set_mode", "STABILIZED");
     });
@@ -254,9 +257,10 @@ const Controls = () => {
   };
 
   useEffect(() => {
+    const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       console.log("MQTT client connected to the server.");
-      client.subscribe("/drone/mode")
+      client.subscribe("/drone/mode");
       client.subscribe("/drone/status");
       client.subscribe("/drone/progress");
       client.subscribe("/drone/lat");
@@ -377,7 +381,7 @@ const Controls = () => {
               aria-expanded={open ? 'true' : undefined}
               onClick={handleClick}
             >
-              {}
+              {droneStatus}
             </Button>
               <Menu
                 id="mode-menu"
