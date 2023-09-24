@@ -311,8 +311,7 @@ const Controls = () => {
         // }
       }
       if (topic === "/drone/mode"){
-        // let mode = message.toString();
-        let mode = JSON.parse(message);
+        let mode = message.toString();
         console.log(message);
         if(mode === "AUTO.LOITER"){
           setDroneMode("HOLD");
