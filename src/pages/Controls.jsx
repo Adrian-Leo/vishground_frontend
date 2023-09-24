@@ -411,7 +411,7 @@ const Controls = () => {
               aria-expanded={open ? 'true' : undefined}
               onClick={handleClick}
             >
-              {droneStatus}
+              {droneStatus.toString()}
             </Button>
               <Menu
                 id="mode-menu"
