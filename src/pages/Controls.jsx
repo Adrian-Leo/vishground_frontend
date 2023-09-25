@@ -40,14 +40,14 @@ const Controls = () => {
   const open = Boolean(anchorEl);
 
   const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
     const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       client.publish("/drone/set_mode", droneSetMode);
     });
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
     setAnchorEl(null);
   };
 
@@ -282,12 +282,11 @@ const Controls = () => {
     console.log("masuk config");
     client.on("message", (topic, message) => {
       if (topic === "/drone/status") {
-        setDroneStatus(message);
-        // if (message.toString() === "0") {
-        //   setDroneStatus("Disarmed");
-        // } else if (message.toString() === "1") {
-        //   setDroneStatus("Armed");
-        // }
+        if (message.toString() === "0") {
+          setDroneStatus("Disarmed");
+        } else if (message.toString() === "1") {
+          setDroneStatus("Armed"); 
+        }
       }
       if (topic === "/drone/mode"){
         let mode = message.toString();
@@ -382,17 +381,13 @@ const Controls = () => {
             Controls Unnamed Drone
           </Typography>
           <div className="flex justify-between ml-[40px] w-fit bg-purple-light hover:bg-purple-dark">
-            <Button
-              id="mode-button"
+            <p
+              id="mode-text"
               className="text-white px-4"
-              aria-controls={open ? 'mode-menu' : undefined}
-              aria-haspopup="true"
-              aria-expanded={open ? 'true' : undefined}
-              onClick={handleClick}
             >
               {droneMode}
-            </Button>
-              <Menu
+            </p>
+              {/* <Menu
                 id="mode-menu"
                 anchorEl={anchorEl}
                 open={open}
@@ -410,7 +405,7 @@ const Controls = () => {
                 <MenuItem onClick={handleCloseHold} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>HOLD</MenuItem>
                 <MenuItem onClick={handleCloseMission} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>MISSION</MenuItem>
                 <MenuItem onClick={handleCloseReturn} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>RETURN</MenuItem>
-                {/* <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>MANUAL</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>MANUAL</MenuItem>
                 <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>ACRO</MenuItem>
                 <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>ALTITUDE</MenuItem>
                 <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>POSITION</MenuItem>
@@ -418,9 +413,9 @@ const Controls = () => {
                 <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>OFFBOARD</MenuItem>
                 <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>HOLD</MenuItem>
                 <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>MISSION</MenuItem>
-                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>RETURN</MenuItem> */}
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>RETURN</MenuItem>
               
-              </Menu>
+              </Menu> */}
           </div>
           <div style={{ display: "flex", flexDirection: "column", padding: "20px", gap: "20px" }} className="h-full">
           <Stack direction={"column"} padding="20px" gap="20px">
