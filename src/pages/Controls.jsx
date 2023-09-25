@@ -36,6 +36,8 @@ const Controls = () => {
   const [droneStatus, setDroneStatus] = useState([]);
   const [droneAltitude, setDroneAltitude] = useState([]);
   const [anchorEl, setAnchorEl] = useState([]);
+  const [markers, setMarkers] = useState([]);
+  const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(null);
 
   const open = Boolean(anchorEl);
 
@@ -201,12 +203,18 @@ const Controls = () => {
 
   const defaultProps = {
     center: {
+      //edit jordhie: kalo null bakal ke default hardcode, kalo ga null harusnya ke
+      //lokasi drone
       lat: attitude.lat,
       lng: attitude.lng,
+      // lat: attitude.lat,
+      // lng: attitude.lng,
+      // lat: droneFlightLtd,
+      // lng: droneFlightLng,
     },
     fly: {
-    lat: -4.6140971,
-    lng: 105.224446,
+      lat: droneFlightLtd,
+      lng: droneFlightLng,
     },
     zoom: 18,
     options: {
@@ -420,7 +428,7 @@ const Controls = () => {
           <div style={{ display: "flex", flexDirection: "column", padding: "20px", gap: "20px" }} className="h-full">
           <Stack direction={"column"} padding="20px" gap="20px">
             <Stack style={{ height: "50vh", width: "100%" }}>
-              <GoogleMapReact
+            <GoogleMapReact
                 bootstrapURLKeys={{
                   key: "AIzaSyAQhpgh7axWcIaO_G4YjpHROf0XnfqmSlo",
                   language: "id",
@@ -429,22 +437,41 @@ const Controls = () => {
                 defaultZoom={defaultProps.zoom}
                 options={{ mapTypeId: mapType }}
                 onClick={(e) => {
-                  if (mapsFlightLtd.length < titik) {
-                    let arr = [...mapsFlight];
-                    let arr1 = [...mapsFlightLtd];
-                    let arr2 = [...mapsFlightLng];
-                    arr.push({ lat: e.lat, lng: e.lng });
-                    arr1.push(e.lat);
-                    arr2.push(e.lng);
-                    setMapsFlight(arr);
-                    setMapsFlightLtd(arr1);
-                    setMapsFlightLng(arr2);
-                  }
+                  // Create a new marker object with the clicked latitude and longitude
+                  const newMarker = {
+                    lat: e.lat,
+                    lng: e.lng,
+                  };
+
+                  // Add the new marker to the markers state
+                  setMarkers([...markers, newMarker]);
                 }}
               >
-                <LocationDrone lat={droneFlightLtd} lng={droneFlightLng} text="Drone" color="white" startLat={droneFlightLtd} startLong={droneFlightLng} />
+                <LocationDrone lat={droneFlightLtd} lng={droneFlightLng} text="Drone" color="black" startLat={droneFlightLtd} startLong={droneFlightLng} />
                 {mapsFlightLtd?.map((lat, idx) => (
                   <LocationPin lat={lat} lng={mapsFlightLng[idx]} text={`Node ${idx + 1}`} color="yellow" />
+                ))}
+
+                {/* Render new waypoints */}
+                {markers.map((marker, index) => (
+                  <LocationPin
+                    key={index}
+                    lat={marker.lat}
+                    lng={marker.lng}
+                    text={`Waypoint ${index + 1}`}
+                    color={selectedMarkerIndex === index ? "red" : "blue"} // Highlight the selected marker
+                    onClick={() => {
+                      // If the marker is already selected, remove it
+                      if (selectedMarkerIndex === index) {
+                        const updatedMarkers = markers.filter((_, i) => i !== index);
+                        setMarkers(updatedMarkers);
+                        setSelectedMarkerIndex(null); // Deselect the marker
+                      } else {
+                        // Deselect any previously selected marker
+                        setSelectedMarkerIndex(index);
+                      }
+                    }}
+                  />
                 ))}
               </GoogleMapReact>
             </Stack>
