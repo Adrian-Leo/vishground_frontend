@@ -14,12 +14,20 @@ import options from "./utility/OptionsMQTT";
 import { handleTakeOff, handleLanding } from "./utility/FlightHandling";
 import NavbarDefault from "./components/Navbar";
 import GoogleMapReact from "google-map-react";
+import Button from '@mui/material/Button';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+const server = "wss://hairdresser.cloudmqtt.com";
+const port = 37900;
 
 const Controls = () => {
   moment.locale("id");
   const [mapsFlight, setMapsFlight] = useState([]);
+  const [droneMode, setDroneMode] = useState("");
+  const [droneSetMode, setDroneSetMode] = useState("");
   const [droneFlightLtd, setDroneFlightLtd] = useState([]);
   const [droneFlightLng, setDroneFlightLng] = useState([]);
   const [mapsFlightLtd, setMapsFlightLtd] = useState([]);
@@ -27,11 +35,66 @@ const Controls = () => {
   const [droneProgress, setDroneProgress] = useState([]);
   const [droneStatus, setDroneStatus] = useState([]);
   const [droneAltitude, setDroneAltitude] = useState([]);
+  const [anchorEl, setAnchorEl] = useState([]);
 
+  const open = Boolean(anchorEl);
 
+  const handleClick = (event) => {
+    const client = mqtt.connect(`${server}:${port}`, options);
+    client.on("connect", () => {
+      client.publish("/drone/set_mode", droneSetMode);
+    });
+    setAnchorEl(event.currentTarget);
+  };
 
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
+  const handleCloseManual = () => {
+    setDroneSetMode("MANUAL");
+    setAnchorEl(null);
+  }
 
+  const handleCloseAcro = () => {
+    setDroneSetMode("ACRO");
+    setAnchorEl(null);
+  }
+
+  const handleCloseAltitude = () => {
+    setDroneSetMode("ALTITUDE");
+    setAnchorEl(null);
+  }
+
+  const handleCloseHold = () => {
+    setDroneSetMode("HOLD");
+    setAnchorEl(null);
+  }
+
+  const handleClosePosition = () => {
+    setDroneSetMode("POSITION");
+    setAnchorEl(null);
+  }
+
+  const handleCloseMission = () => {
+    setDroneSetMode("MISSION");
+    setAnchorEl(null);
+  }
+
+  const handleCloseOffboard = () => {
+    setDroneSetMode("OFFBOARD");
+    setAnchorEl(null);
+  }
+
+  const handleCloseReturn = () => {
+    setDroneSetMode("RETURN");
+    setAnchorEl(null);
+  }
+
+  const handleCloseStabilized = () => {
+    setDroneSetMode("STABILIZED");
+    setAnchorEl(null);
+  }
 
   let arrCoor = [...mapsFlight];
 
@@ -182,11 +245,10 @@ const Controls = () => {
   };
 
   useEffect(() => {
-    const port = 37900;
-    const server = "wss://hairdresser.cloudmqtt.com";
     const client = mqtt.connect(`${server}:${port}`, options);
     client.on("connect", () => {
       console.log("MQTT client connected to the server.");
+      client.subscribe("/drone/mode");
       client.subscribe("/drone/status");
       client.subscribe("/drone/progress");
       client.subscribe("/drone/lat");
@@ -219,12 +281,36 @@ const Controls = () => {
 
     console.log("masuk config");
     client.on("message", (topic, message) => {
-      console.log("tessss");
       if (topic === "/drone/status") {
         if (message.toString() === "0") {
           setDroneStatus("Disarmed");
         } else if (message.toString() === "1") {
-          setDroneStatus("Armed");
+          setDroneStatus("Armed"); 
+        }
+      }
+      if (topic === "/drone/mode"){
+        let mode = message.toString();
+        console.log(message);
+        if(mode === "AUTO.LOITER"){
+          setDroneMode("HOLD");
+        }else if(mode === "AUTO.MISSION"){
+          setDroneMode("MISSION");
+        }else if(mode === "AUTO.RTL"){
+          setDroneMode("RETURN");
+        }else if(mode === "AUTO.LAND"){
+          setDroneMode("LAND");
+        }else if(mode === "STABILIZED"){
+          setDroneMode("STABILIZED");
+        }else if(mode === "OFFBOARD"){
+          setDroneMode("OFFBOARD");
+        }else if(mode === "POSCTL"){
+          setDroneMode("POSITION");
+        }else if(mode === "ALTCTL"){
+          setDroneMode("ALTITUDE");
+        }else if(mode === "ACRO"){
+          setDroneMode("ACRO");
+        }else if(mode === "MANUAL"){
+          setDroneMode("MANUAL");
         }
       }
       if (topic === "/drone/progress") {
@@ -294,13 +380,42 @@ const Controls = () => {
           >
             Controls Unnamed Drone
           </Typography>
-          <div style={{ display: "flex", flexDirection: "row", gap: "10px", padding: "20px" }}>
-            <button className="bg-purple-light hover:bg-purple-dark hover:shadow-2xl w-56 h-12" onClick={handleViewChange}>
-              Switch to {mapType === "roadmap" ? "Satellite" : "Roadmap"} view
-            </button>
-            <button className="bg-purple-light hover:bg-purple-dark hover:shadow-2xl w-40 h-12" onClick={handleResetLocation}>
-              Reset Location
-            </button>
+          <div className="flex justify-between ml-[40px] w-fit bg-purple-light hover:bg-purple-dark">
+            <p
+              id="mode-text"
+              className="text-white px-4"
+            >
+              {droneMode}
+            </p>
+              {/* <Menu
+                id="mode-menu"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+                MenuListProps={{
+                  'aria-labelledby': 'mode-button',
+                }}
+              >
+                <MenuItem onClick={handleCloseManual} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>MANUAL</MenuItem>
+                <MenuItem onClick={handleCloseAcro} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>ACRO</MenuItem>
+                <MenuItem onClick={handleCloseAltitude} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>ALTITUDE</MenuItem>
+                <MenuItem onClick={handleClosePosition} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>POSITION</MenuItem>
+                <MenuItem onClick={handleCloseStabilized} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>STABILIZED</MenuItem>
+                <MenuItem onClick={handleCloseOffboard} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>OFFBOARD</MenuItem>
+                <MenuItem onClick={handleCloseHold} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>HOLD</MenuItem>
+                <MenuItem onClick={handleCloseMission} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>MISSION</MenuItem>
+                <MenuItem onClick={handleCloseReturn} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>RETURN</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>MANUAL</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>ACRO</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>ALTITUDE</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>POSITION</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>STABILIZED</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>OFFBOARD</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>HOLD</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>MISSION</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>RETURN</MenuItem>
+              
+              </Menu> */}
           </div>
           <div style={{ display: "flex", flexDirection: "column", padding: "20px", gap: "20px" }} className="h-full">
           <Stack direction={"column"} padding="20px" gap="20px">
