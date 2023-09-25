@@ -4,7 +4,7 @@ import { Typography, IconButton } from "@mui/material";
 
 const LocationDrone = ({ text, color }) => (
   <IconButton sx={{ display: "inline-block", transform: "none", transform: "translate(-50%, -50%)" }}>
-    <FaPlane color="white" />
+    <FaPlane color="blue" />
     <Typography component="p" sx={{ color: color }}>
       {text}
     </Typography>
