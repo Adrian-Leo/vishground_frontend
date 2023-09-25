@@ -27,6 +27,7 @@ const Controls = () => {
   moment.locale("id");
   const [mapsFlight, setMapsFlight] = useState([]);
   const [droneMode, setDroneMode] = useState("");
+  const [droneSetMode, setDroneSetMode] = useState("");
   const [droneFlightLtd, setDroneFlightLtd] = useState([]);
   const [droneFlightLng, setDroneFlightLng] = useState([]);
   const [mapsFlightLtd, setMapsFlightLtd] = useState([]);
@@ -37,83 +38,61 @@ const Controls = () => {
   const [anchorEl, setAnchorEl] = useState([]);
 
   const open = Boolean(anchorEl);
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
   const handleClose = () => {
+    const client = mqtt.connect(`${server}:${port}`, options);
+    client.on("connect", () => {
+      client.publish("/drone/set_mode", droneSetMode);
+    });
     setAnchorEl(null);
   };
 
   const handleCloseManual = () => {
-    const client = mqtt.connect(`${server}:${port}`, options);
-    client.on("connect", () => {
-      client.publish("/drone/set_mode", "MANUAL");
-    });
+    setDroneSetMode("MANUAL");
     setAnchorEl(null);
   }
 
   const handleCloseAcro = () => {
-    const client = mqtt.connect(`${server}:${port}`, options);
-    client.on("connect", () => {
-      client.publish("/drone/set_mode", "ACRO");
-    });
+    setDroneSetMode("ACRO");
     setAnchorEl(null);
   }
 
   const handleCloseAltitude = () => {
-    const client = mqtt.connect(`${server}:${port}`, options);
-    client.on("connect", () => {
-      client.publish("/drone/set_mode", "ALTITUDE");
-    });
+    setDroneSetMode("ALTITUDE");
     setAnchorEl(null);
   }
 
   const handleCloseHold = () => {
-    const client = mqtt.connect(`${server}:${port}`, options);
-    client.on("connect", () => {
-      client.publish("/drone/set_mode", "HOLD");
-    });
+    setDroneSetMode("HOLD");
     setAnchorEl(null);
   }
 
   const handleClosePosition = () => {
-    const client = mqtt.connect(`${server}:${port}`, options);
-    client.on("connect", () => {
-      client.publish("/drone/set_mode", "POSITION");
-    });
+    setDroneSetMode("POSITION");
     setAnchorEl(null);
   }
 
   const handleCloseMission = () => {
-    const client = mqtt.connect(`${server}:${port}`, options);
-    client.on("connect", () => {
-      client.publish("/drone/set_mode", "MISSION");
-    });
+    setDroneSetMode("MISSION");
     setAnchorEl(null);
   }
 
   const handleCloseOffboard = () => {
-    const client = mqtt.connect(`${server}:${port}`, options);
-    client.on("connect", () => {
-      client.publish("/drone/set_mode", "OFFBOARD");
-    });
+    setDroneSetMode("OFFBOARD");
     setAnchorEl(null);
   }
 
   const handleCloseReturn = () => {
-    const client = mqtt.connect(`${server}:${port}`, options);
-    client.on("connect", () => {
-      client.publish("/drone/set_mode", "RTL");
-    });
+    setDroneSetMode("RETURN");
     setAnchorEl(null);
   }
 
   const handleCloseStabilized = () => {
-    const client = mqtt.connect(`${server}:${port}`, options);
-    client.on("connect", () => {
-      client.publish("/drone/set_mode", "STABILIZED");
-    });
+    setDroneSetMode("STABILIZED");
     setAnchorEl(null);
   }
 
@@ -431,6 +410,16 @@ const Controls = () => {
                 <MenuItem onClick={handleCloseHold} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>HOLD</MenuItem>
                 <MenuItem onClick={handleCloseMission} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>MISSION</MenuItem>
                 <MenuItem onClick={handleCloseReturn} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>RETURN</MenuItem>
+                {/* <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>MANUAL</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>ACRO</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>ALTITUDE</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>POSITION</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>STABILIZED</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>OFFBOARD</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>HOLD</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>MISSION</MenuItem>
+                <MenuItem onClick={handleClose} style={{backgroundColor: '#3D3356', ':hover': { backgroundColor: '#312945'}}}>RETURN</MenuItem> */}
+              
               </Menu>
           </div>
           <div style={{ display: "flex", flexDirection: "column", padding: "20px", gap: "20px" }} className="h-full">
